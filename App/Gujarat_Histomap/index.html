@@ -1,0 +1,333 @@
+<html>
+<head>
+<title> 2.3 : HISTOMAP</title>
+</head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-color.v0.5.min.js"></script>
+<script src="https://d3js.org/d3-hsv.v0.0.min.js"></script>
+<script src="https://unpkg.com/react@15/dist/react.min.js"></script>
+<script src="https://unpkg.com/react-dom@15/dist/react-dom.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<link rel="stylesheet" href="Styles/main.css">
+<body>
+<script src="Data/Final_Histomap_Data.js"></script>
+<div id="mainVisualization"></div>
+<script>
+
+function main_visualization(top,left)
+{
+
+// external margin	
+var margin = {top:0,left:0,bottom:0,right:0};
+
+var width = window.innerHeight-margin.left-margin.right;
+var height = window.innerHeight-margin.top-margin.bottom;
+
+$('#mainVisualization').css("width",width);
+$('#mainVisualization').css("height",height);
+$('#mainVisualization').css("top",top+margin.top);
+$('#mainVisualization').css("left",left+margin.left);
+$('#main').remove();
+
+var mainVisualizationCanvas = d3.select("#mainVisualization").append("svg")
+     .attr("id","main")
+     .attr("xmlns","http://www.w3.org/2000/svg")
+     .attr("viewBox","0 0 500 500")
+     .attr("class", "mainsvg");
+
+// $('#main').css("background-color","#1e273d");
+$('#main').css("background-color","#f9f6ea");
+
+var mainVisualizationDim = 500; 
+
+// internal visualization margin
+var imargin = {top:0,left:30,bottom:0,right:30};
+
+// time scale for years along the vertical
+var vertical_time_scale = d3.scaleTime()
+							.domain([new Date(1961,0,1),new Date(2017,0,1)])
+							.range([0,500]);
+
+// Maximum number of constituencies
+var max_const = Math.max.apply(Math,constituency_data.map(function(o){return o.AC_Data.length;}))
+var rect_width = (mainVisualizationDim-imargin.left-imargin.right)/max_const;
+var rect_height = vertical_time_scale(new Date(1962,6,1))-vertical_time_scale(new Date(1962,0,1))
+
+// Sorting the arrangement of constituencies
+constituency_data.map(function(o){o.AC_Data.sort(function(a,b){
+	 var var_a = a.Party.substring(0,3);
+	 var var_b = b.Party.substring(0,3);
+	 
+	 var var_ai = main_parties.indexOf(var_a)
+	 var var_bi = main_parties.indexOf(var_b)
+	 
+	 // if (var_ai <= -1) {var_a = 'Z';}
+	 // if (var_bi <= -1) {var_b = 'Z';}
+
+	 if (var_ai <= -1) {var_ai = 100;}
+	 if (var_bi <= -1) {var_bi = 100;}
+
+	 // return (var_a > var_b) ? 1 : ((var_b > var_a) ? -1 : 0); 
+	 return (var_ai > var_bi) ? 1 : ((var_bi > var_ai) ? -1 : 0); 
+})})
+
+
+// Year grid for elections
+var year_grid = mainVisualizationCanvas.append("g")
+										.attr("id","Reference_Lines")
+										.selectAll("line")
+										.data(constituency_data)
+										.enter()
+										.append("line")
+										.attr("y1",function(d,i){
+											var date = new Date(d.Year,0,1);
+											return (vertical_time_scale(date)+rect_height/2);
+										})
+										.attr("x1",0)
+										.attr("y2",function(d,i){
+											var date = new Date(d.Year,0,1);
+											return (vertical_time_scale(date)+rect_height/2);})
+										.attr("x2",mainVisualizationDim)
+										.attr("stroke","black")
+										.attr("stroke-width",0.5);
+
+
+//Histomap
+
+var year_shifter = [];
+for ( var a = 0 ; a<constituency_data.length ;a++)
+{
+	var less_const = max_const-constituency_data[a].AC_Data.length;
+	var reduction_x = less_const*rect_width;
+	year_shifter.push(reduction_x/2);
+}
+
+
+// DATA PART 
+// Parties every Year
+var parties = main_parties;
+parties.push('Oth');
+
+// Adding Others Count
+for ( var i = 0 ; i <histomap_data.length ;i++)
+{
+	var others_count = 0;
+	for ( var j = 0 ; j <histomap_data[i].Party_Count[0].length;j++)
+	{
+		var cur_party = histomap_data[i].Party_Count[0][j].Party;
+		var cur_count = parseInt(histomap_data[i].Party_Count[0][j].Count);
+		var cur_year = histomap_data[i].Party_Count[0][j].Year;
+		if(parties.indexOf(cur_party.substring(0,3))<0)
+			{
+				others_count = others_count + cur_count;
+			}
+	}
+	var data = {"Year" : histomap_data[i].Party_Count[0][0].Year , "Party" : "Oth" , "Count" :others_count};
+	histomap_data[i].Party_Count[0].push(data);
+}
+
+// Years when elections were held
+var election_years = histomap_data.map(function(d){return(parseInt(d.Year))});
+
+// DS holding histo polygon data
+var histo_drawing_data = [];
+for ( var y = 0 ; y<election_years.length ;y ++)
+{
+	party_data = [];
+	for ( var p = 0 ; p <main_parties.length ;p++)
+	{
+		var x_s =0;
+		var x_e =0;
+		var count = count_find(p,y);
+		var temp = {"Party":main_parties[p],"Count":count,"x_s":x_s,"x_e":x_e};
+		party_data.push(temp);
+	}
+
+	year_data = {"Year":election_years[y],"Party":party_data};
+	histo_drawing_data.push(year_data);
+}
+
+
+for ( var y = 0 ; y<election_years.length ;y ++)
+{
+	for ( var p = 0 ; p <main_parties.length ;p++)
+	{
+		histo_drawing_data[y].Party[p].x_s = x_s_find(p,y);
+		histo_drawing_data[y].Party[p].x_e = x_e_find(p,y);
+	}
+	
+}
+
+// Starting position of polygon in that year
+function x_s_find(p,y)
+{
+	var x_s = 0;
+	if (p>0) x_s = x_s + histo_drawing_data[y].Party[p-1].x_e;
+	return x_s;
+}
+
+// Ending position of polygon in that year
+function x_e_find(p,y)
+{
+	var x_e = 0;
+	var count_find_1 = count_find(p,y);
+	x_e = histo_drawing_data[y].Party[p].x_s + count_find(p,y)*rect_width;
+	return x_e;
+}
+
+function count_find(p,y)
+{
+	var party = main_parties[p];
+	var data_v1 = histomap_data[y];
+	var data_party= histodata_return_party(party,data_v1.Party_Count[0]);
+	var final_data_party = data_party ? data_party.Count : 0 ;
+	return(parseInt(final_data_party));
+}
+
+function histodata_return_party(party,histdata)
+{
+	var data_r = histdata.find(party_match);
+	function party_match(data) {if ( data.Party.substring(0,3) == party) return data; }
+	return data_r;
+}
+
+function histodata_return(year)
+{
+	var data_r = histomap_data.find(year_match);
+	function year_match(data) {if ( data.Year == year) return data; }
+	return data_r;
+}
+
+
+// DRAWING PART
+
+var histomap = mainVisualizationCanvas.append("g")
+									  .attr("id","Histomap");
+
+function draw_histomap(year)
+{
+	
+var histo_data = histodata_return(year);
+
+var histomap_outer = histomap.append("svg")
+		.attr("background-color","#e0ecff")
+		.attr("id",function(d,i){return("histomap_"+year)})
+	    .attr("y",function(d,i){
+			var date = new Date(year,0,1);
+			return(vertical_time_scale(date));
+			})
+		.attr("x",function(d,i){
+			var i = election_years.indexOf(year);
+			return (year_shifter[i]);
+			})
+
+var histomap_inner = histomap_outer.selectAll("polygon")
+							 .data(parties)
+							 .enter()
+							 .append("polygon")
+							 .attr("id",function(d,i){return d;})
+							 .attr("points",function(d,i){
+							 	var p = parties.indexOf(d);
+							 	var y = election_years.indexOf(year);
+
+							 	var new_date = new Date(election_years[y+1],0,1);
+							 	var cur_date = new Date(year,0,1);
+
+							 	var i = election_years.indexOf(year);
+								var shift_current = year_shifter[i] ? year_shifter[i] :0;
+								var shift_next = year_shifter[i+1] ? year_shifter[i+1] :0;
+
+								var overall_shift = Math.abs(shift_current-shift_next);
+
+							 	var second_y = vertical_time_scale(new_date)-vertical_time_scale(cur_date);
+							 	var second_y = second_y ? second_y :0;
+							 	pointa ={ "x":imargin.left+histo_drawing_data[y].Party[p].x_s,"y" :rect_height};
+							 	pointb ={ "x" :imargin.left+histo_drawing_data[y].Party[p].x_e,"y" :rect_height};
+							 	pointc ={ "x" :imargin.left+pointb.x ,"y" :second_y};
+							 	pointd ={ "x" :imargin.left+pointa.x,"y" :second_y};
+
+							 	if(y!=11)
+							 	{
+							 		pointc.x = imargin.left+histo_drawing_data[y+1].Party[p].x_e-overall_shift
+							 		pointd.x = imargin.left+histo_drawing_data[y+1].Party[p].x_s-overall_shift
+							 	}
+
+							 	points_2_return =[];
+							 	points_2_return.push(pointa.x+","+pointa.y);
+							 	points_2_return.push(pointb.x+","+pointb.y);
+							 	points_2_return.push(pointc.x+","+pointc.y);
+							 	points_2_return.push(pointd.x+","+pointd.y);
+							 	points_2_return.push(pointa.x+","+pointa.y);
+
+							 	return(points_2_return)
+
+							 })
+							 .attr("fill",function(d,i){
+							 	var fill_index = main_parties.indexOf(d)
+							 	return main_party_color[fill_index];
+							 })
+							 .attr("fill-opacity",0.6);
+
+}
+
+election_years.map(function(d){draw_histomap(d);});
+
+// Year wise constituency rectangle
+var year_svg = mainVisualizationCanvas.append("g")
+										.attr("id","Constituency_SVG")
+										.selectAll("svg")
+										.data(constituency_data)
+										.enter()
+										.append("svg")
+										.attr("background-color","#e0ecff")
+										.attr("y",function(d,i){
+											var date = new Date(d.Year,0,1);
+											return(vertical_time_scale(date));
+										})
+										.attr("x",function(d,i){
+											var less_const = max_const-d.AC_Data.length;
+											var reduction_x = less_const*rect_width;
+											return reduction_x/2;
+
+										})
+										.attr("id",function(d,i){return d.Year+"rect"})
+
+				var const_rect= year_svg.append('g')
+										.attr('id','constituencies')
+										.selectAll("rect")
+										.data(function(d,i){
+											return(d.AC_Data)
+										})
+										.enter()
+										.append("rect")
+										.attr("x",function(d,i){return imargin.left+(i*rect_width)})
+										.attr("y",0)
+										.attr("id",function(d,i){return d.Constituency+'_'+d.Party})
+										.attr("width",rect_width)
+										.attr("height",rect_height)
+										.attr("fill",function(d,i){
+											var i = main_parties.indexOf(d.Party.substring(0,3))
+											if (i > -1) return main_party_color[i]
+											else return main_party_color[9]
+										})
+										.attr("opacity",function(d,i){
+											if (d.AC_Type == "GEN")
+												return 0.8
+											else if (d.AC_Type =="SC")
+												return 0.6
+											else if (d.AC_Type =="ST")
+												return 0.4
+											})
+										.attr("stroke","black")
+										.attr("stroke-width",0.2);			
+
+
+}
+
+main_visualization(0,0)
+
+</script>	
+
+
+</body>
+</html>

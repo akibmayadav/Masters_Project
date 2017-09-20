@@ -1,0 +1,86 @@
+<html>
+<head>
+<title> SLIDE- 5 TO 9</title>
+</head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<link rel="stylesheet" type="text/css" href="Style/main.css">
+<body>
+<div id="mainVisualization" style= "position:absolute"></div>
+<script>
+
+var width = window.innerWidth*8/10;
+var height = width*0.6;
+
+var top_center = (window.innerHeight - height)/2 ;
+var left_center = (window.innerWidth - width)/2 ;
+
+$('#mainVisualization').css("width",width);
+$('#mainVisualization').css("height",height);
+$('#mainVisualization').css("left",left_center);
+$('#mainVisualization').css("top",top_center);
+$('#main').remove();
+
+var i_width = 1000; 
+var i_height = 600;
+var mainVisualizationCanvas = d3.select("#mainVisualization").append("svg")
+     .attr("id","main")
+     .attr("xmlns","http://www.w3.org/2000/svg")
+     .attr("viewBox","0 0 1000 600")
+     .attr("class", "mainsvg");
+
+$('#main').css("background-color","#f9f6ea");
+
+d3.csv("Data/Final_Political_Data.csv",function(error,data){
+	
+	var margin = {"top": 100, "bottom":100 , "left":20, "right":20};
+
+	var years = d3.nest()
+				.key(function(d) {return d.Year})
+				.entries(data);
+
+	var year_extent = d3.extent(years,function(d,i){return(parseInt(d.key))});
+
+	var y_scale = d3.scaleLinear()
+					.domain(year_extent)
+					.range([0,i_height-margin.top-margin.bottom]);
+
+	var constituency_extent = d3.max(years,function(d,i){return(d.values.length)});
+
+	var constituency_rect_width = (i_width-margin.left-margin.right)/constituency_extent;
+	var constituency_rect_height = 20;
+
+
+	var constituency_grid = mainVisualizationCanvas.append("g")
+									.attr("id","constituency_grid")
+									.style("position","absolute")
+									.attr("transform","translate("+margin.left+","+margin.top+")");
+
+	var constituencies_year = constituency_grid.selectAll("g")
+								.data(years)
+								.enter()
+								.append("g")
+								.attr("id",function(d,i){return d.key});
+
+	var constituencies = constituencies_year.selectAll("rect")
+								.data(function(d,i){return d.values})
+								.enter()
+								.append("rect")
+								.attr("x",function(d,i){
+									return (i*constituency_rect_width);
+								})
+								.attr("y",function(d,i){return(y_scale(d.Year)-constituency_rect_height/2)})
+								.attr("id",function(d,i){return i+"num"})
+								.attr("width",constituency_rect_width)
+								.attr("height",constituency_rect_height)
+								.attr("fill","black")
+								.attr("opacity",0.5);
+
+})
+
+
+</script>	
+
+
+</body>
+</html>
