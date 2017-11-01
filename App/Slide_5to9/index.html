@@ -1,6 +1,6 @@
 <html>
 <head>
-<title> SLIDE- 5 TO 9</title>
+<title> SLIDE- 1 TO 9</title>
 </head>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
@@ -9,17 +9,30 @@
 <img id= "left_arrow" src = "Assets/arr.png" onClick="left_move()">
 <img id= "right_arrow" src = "Assets/arr.png" onClick="right_move()">
 <div id="mainVisualization" style= "position:absolute"></div>
+<div id="slide1introductionText" style= "position:absolute"></div>
+<div id="centerintroductionText" style= "position:absolute"></div>
 <div id="introductionText" style= "position:absolute"></div>
 <div id="selectionText" style= "position:absolute"></div>
 <script>
 
+var current_url = window.location.href;
+var slider = 1; 
+
+var splitter_lev1 = current_url.split("?")[1]?current_url.split("?")[1]:0;
+if (splitter_lev1)
+{
+	slider = parseInt(splitter_lev1.split("=")[1]);
+}
+
 var which_slide = 0; 
-var slider = 5; 
 
 var left_move, right_move;
 
 var categories = ["GEN","SC","ST"];
-var category_colors = ['#dd6a6a','#4089ef','#3fc155']
+var category_colors = ['#dd6a6a','#4089ef','#3fc155'];
+
+var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
+var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
 
 var width = window.innerWidth*0.8;
 var height = width*0.6;
@@ -60,13 +73,13 @@ var bottomslide_text = d3.select("#selectionText")
 
 $('body').css("background-color","#f9f6ea");
 
-
 d3.csv("Data/Final_Political_Data.csv",function(error,data)
 
 {
+
 	left_move= function()
 	{
-	if ( slider >5) 
+	if ( slider >1) 
 	{ 
 		slider = slider-1;
 		slide_implement(slider); 
@@ -80,6 +93,10 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 		slider = slider+1;
 		slide_implement(slider);
 	}
+	else 
+	{
+		location.href="socio_economic.html"
+	}
 	
 	}
 	
@@ -87,6 +104,10 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 	{
 		switch(slider) 
 		{
+		case 1 : slide_1(); break;
+		case 2 : slide_2(); break;
+		case 3 : slide_3(); break;
+		case 4 : slide_4(); break;
 		case 5 : slide_5(); break;
 		case 6 : slide_6(); break;
 		case 7 : slide_7(); break;
@@ -107,27 +128,17 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 	var y_scale = d3.scaleLinear()
 					.domain(year_extent)
 					.range([i_height-margin.top-margin.bottom,0]);
-	
 	// Year Labels 
 	mainVisualizationCanvas.append("g")
-							.attr("id","Year_Label")
-							.selectAll("text")
-							.data(years)
-							.enter()
-							.append("text")
-							.attr("transform","translate("+25+","+margin.top+")")
-							.text(function(d,i){
-								return d.key})
-							.attr("y",function(d,i){return(y_scale(d.key)+6)});
-
-	// Sort Button 
-	// mainVisualizationCanvas.append("g")
-	// 						.attr("id","sortButton")
-	// 						.style("position","absolute")
-	// 						.append("text")
-	// 						.attr("x",50)
-	// 						.attr("y",50)
-	// 						.text("SORT")
+								.attr("id","Year_Label")
+								.selectAll("text")
+								.data(years)
+								.enter()
+								.append("text")
+								.attr("transform","translate("+25+","+margin.top+")")
+								.text(function(d,i){
+									return d.key})
+								.attr("y",function(d,i){return(y_scale(d.key)+6)});
 
 	var constituency_extent = d3.max(years,function(d,i){return(d.values.length)});
 
@@ -154,17 +165,70 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 								.attr("id",function(d,i){
 									return d.Year+"_"+d.AC_Name})
 
-//////////////////////// INTRO CONTINUOS WINNING CAND CONSTITUENCY SLIDE ///////////////////////
 	slide_implement(slider);
+	
+	function slide_1()
+	{
+		$("#Year_Label").attr("opacity",0);
+		which_slide = 1; 
+
+		$("#centerintroductionText").html("<b><font color='#e0dd2a'><font size='40vw'> MATDAN </font></font></b><br><font size='3vw'>Educating the Electorate</font>")
+
+	}
+
+	function slide_2()
+	{
+		// Clearing Slide 3
+		slide_text.html("");
+		$("#Year_Label").attr("opacity",0);
+
+		which_slide = 2; 
+		$("#centerintroductionText").html("India is the largest democracy in terms of the population in the world. But it is a <b> FLAWED DEMOCRACY </b> as the electorate, that is we the people are not educated and informed about the vote we cast. <br><br> We the citizens of India are bringing in a revolution to transition this flawed democracy to a real democracy. Matdan is designed to catalyze this revolution starting from the upcoming <br><br> <b> <font color='#e0dd2a'> GUJARAT LEGISLATIVE ELECTIONS 2018 </font></b><br> <br>Matdan brings you the performance of governments over the years and analysis of manifestos of the parties contesting in the upcoming elections, so that you can make a better choice.");
+
+	}
+
+	function slide_3()
+	{
+		which_slide = 3; 
+
+		//Clearing Slide 1
+		$("#centerintroductionText").html("");
+
+		//Clearing slide 4
+		bottomslide_text.html("");
+		slide_text.html("Gujarat State Legislative Elections are held every <b> 5 Years. </b> We get a chance to make a decision about who we want our leader to be once every 5 years. In the past few years in Gujarat we made this decision in 2012, 2007, 2002 and 1992");
+		$("#Year_Label").attr("opacity",1);
+
+	}
+	
+
+	function slide_4()
+	{
+		which_slide = 4; 
+		slide_text.html("The government has divided the state of Gujarat into geographic areas holding <b>EQUAL POPULATION</b> These areas are called <b> CONSTITUENCIES.</b> There are <b><font color='#e0dd2a'> 182 </font></b> constituencies in Gujarat.")
+
+		// Clearing Slide 5
+		bottomslide_text.html("");
+		constituency_grid.attr("opacity",0);
+		$("#Year_Label").attr("opacity",0);
+
+	}
+
+	//////////////////////// INTRO CONTINUOS WINNING CAND CONSTITUENCY SLIDE ///////////////////////	
 	function slide_5()
 	{
 		which_slide = 5; 
 		d3.selectAll("#constLabel").remove();
+		bottomslide_text.html("");
+
+		// Activating Slide Grids
+		constituency_grid.attr("opacity",1);
+		$("#Year_Label").attr("opacity",1);
+
 		// For Continuosly winning candidates and generic visualization explanation
+		slide_text.html("During every legislative election, the people of every constituency select a <b>LEADER (MLA)</b> for themselves. The <b>LEADER (MLA)</b> represents the interests and concerns of the people at the Vidhan Sabha.")
 
-			slide_text.html("During every legislative election, the people of every constituency select a leader for themselves. The leader represents the interests and concerns of the people at the Vidhan Soudha. This appropriate representation of concerns is what pushes for change in policies and laws.")
-
-			constituencies.attr("x",function(d,i){
+		constituencies.attr("x",function(d,i){
 									return (i*constituency_rect_width);
 								})
 								.attr("y",function(d,i){return(y_scale(d.Year)-constituency_rect_height/2)})
@@ -175,7 +239,7 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 								.attr("stroke-width",0.6)
 								.attr("opacity",1.0);
 
-			constituencies.on("click",mouseclick);
+		constituencies.on("click",mouseclick);
 			candidate_lines_drawing();
 		
 	}
@@ -187,6 +251,8 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 		//Whether a category is GEN,SC or ST type depending on the population
 			which_slide = 6; 
 			d3.selectAll("#Candidate_Lines").remove();
+			$("#histomap_polygon").remove();
+			bottomslide_text.html("");
 
 			slide_text.html("Depending on the population distribution is every constituency, the constituency is reserved for <b><font color='#dd6a6a'> GEN </font></b>, <b><font color='#4089ef'> SC </font></b> and <b><font color='#3fc155'> ST </font></b> category. This assignment changes over years.")
 
@@ -247,6 +313,7 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 		//Whether a category is GEN,SC or ST type depending on the population
 			which_slide = 6; 
 			d3.selectAll("#Candidate_Lines").remove();
+			bottomslide_text.html("");
 
 			slide_text.html("Depending on the population distribution is every constituency, the constituency is reserved for <b><font color='#dd6a6a'> GEN </font></b>, <b><font color='#4089ef'> SC </font></b> and <b><font color='#3fc155'> ST </font></b> category. This assignment changes over years.")
 
@@ -294,12 +361,13 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 
 //////////////////////// PARTY WINNERS CONSTITUENCY SLIDE ///////////////////////
 
-	function slide_7()
+	function unsortedslide_7()
 	{
 		//Whether party won the election in that constituency.
 
 			which_slide = 7; 
 			d3.selectAll("#constLabel").remove();
+			bottomslide_text.html("");
 			var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
 
 			var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
@@ -340,13 +408,14 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 
 //////////////////////// PARTY WINNERS SORTED CONSTITUENCY SLIDE ///////////////////////
 
-	function sortedslide_7()
+	function slide_7()
 	{
 		//Whether party won the election in that constituency.
 			// Write code to make the various parties array. ( Hardcoded right now)
 
 			which_slide = 7; 
 			d3.selectAll("#constLabel").remove();
+			bottomslide_text.html("");
 			var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
 
 			var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"]
@@ -503,6 +572,7 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 			$("#histomap_polygon").remove();
 			// Slide 9 removal 
 			$("#Average_Turnout_Lines").remove();
+			bottomslide_text.html("");
 
 
 			var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
@@ -565,7 +635,7 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 	{
 		//Voter Turnout
 			which_slide = 9; 
-
+			bottomslide_text.html("");
 			var slidee_text = "Is every voter of the constituency coming out on the Election Day to cast a vote? Every vote from every member of the constituency is important. These votes are what make the government.";
 
 			slide_text.html(slidee_text);
@@ -573,10 +643,6 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 			var turnout_scale = d3.scaleLinear()
 									.domain([0,100])
 									.range([0,constituency_rect_height])
-
-			var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
-
-			var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
 
 			var mean_voter_turnouts = []
 			for ( var y = 0 ; y< years.length ;y++)

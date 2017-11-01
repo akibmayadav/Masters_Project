@@ -1,0 +1,106 @@
+<html>
+<head>
+<title> SLIDE- 10-12 (SOCIO ECONOMIC FACTORS)</title>
+</head>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<link rel="stylesheet" type="text/css" href="Style/main.css">
+<body>
+<img id= "left_arrow" src = "Assets/arr.png" onClick="left_move()">
+<img id= "right_arrow" src = "Assets/arr.png" onClick="right_move()">
+<div id="mainVisualization" style= "position:absolute"></div>
+
+<script>
+
+var which_slide = 0; 
+var slider = 10; 
+
+var left_move, right_move;
+
+var categories = ["GEN","SC","ST"];
+var category_colors = ['#dd6a6a','#4089ef','#3fc155'];
+
+var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
+var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
+
+var width = window.innerWidth*0.8;
+var height = width*0.6;
+
+var top_center = (window.innerHeight - height)/2 ;
+var left_center = (window.innerWidth - width)/2 ;
+
+$('#mainVisualization').css("width",width);
+$('#mainVisualization').css("height",height);
+$('#mainVisualization').css("left",left_center);
+$('#mainVisualization').css("top",top_center);
+
+var i_width = 1000; 
+var i_height = 600;
+
+// SVG the visualization 
+var mainVisualizationCanvas = d3.select("#mainVisualization").append("svg")
+     .attr("id","main")
+     .attr("xmlns","http://www.w3.org/2000/svg")
+     .attr("viewBox","0 0 1000 600")
+     .attr("class", "mainsvg");
+
+$('body').css("background-color","#f9f6ea");
+
+d3.csv("Data/Final_Political_Data.csv",function(error,data)
+
+{
+
+	left_move= function(){
+	if ( slider >10) 
+	{ 
+		slider = slider-1;
+		slide_implement(slider); 
+	}
+	else { location.href="index.html?slider=9"}}
+
+	right_move = function(){
+	if (slider <12) 
+	{ 
+		slider = slider+1;
+		slide_implement(slider);
+	}
+	else {
+		// location.href="current_scenario.html"
+		location.href="socio_economic.html"}
+	}
+	
+	function slide_implement(slider)
+	{
+		console.log(slider);
+		switch(slider) 
+		{
+		case 10 : slide_10(); break;
+		case 11 : slide_11(); break;
+		case 12 : slide_12(); break;
+		}
+	}
+
+	slide_implement(slider);
+	function slide_10()
+	{
+		console.log("hey I am 10");
+	}
+	
+	function slide_11()
+	{
+		console.log("hey I am 11");
+	}
+	
+	function slide_12()
+	{
+		console.log("hey I am 12");
+	}
+
+});
+
+
+</script>	
+
+
+</body>
+</html>
