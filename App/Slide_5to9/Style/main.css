@@ -82,7 +82,7 @@ input[type=text] {
     position:absolute;
     height : 10%;
     left : 0.1vw;
-    top : 50%;
+    bottom : 50%;
     transform: rotateZ(90deg);
     opacity:0.1;
 }
@@ -96,7 +96,7 @@ input[type=text] {
     position:absolute;
     height : 10%;
     right : 0.1vw;
-    top : 50%;
+    bottom : 50%;
     transform: rotateZ(-90deg);
     opacity:0.1;
 }

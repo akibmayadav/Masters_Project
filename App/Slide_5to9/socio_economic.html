@@ -4,18 +4,17 @@
 </head>
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
-<link rel="stylesheet" type="text/css" href="Style/main.css">
+<link rel="stylesheet" type="text/css" href="Style/main_socio_economic.css">
 <body>
 <img id= "left_arrow" src = "Assets/arr.png" onClick="left_move()">
 <img id= "right_arrow" src = "Assets/arr.png" onClick="right_move()">
-<div id="mainVisualization" style= "position:absolute"></div>
+<div id="slide10introductionText" style= "position:absolute"></div>
+<div id="Streamgraph" style= "position:absolute"></div>
 
 <script>
 
-var which_slide = 0; 
-var slider = 10; 
-
-var left_move, right_move;
+var which_slide = 12; 
+var slider = 12; 
 
 var categories = ["GEN","SC","ST"];
 var category_colors = ['#dd6a6a','#4089ef','#3fc155'];
@@ -23,19 +22,41 @@ var category_colors = ['#dd6a6a','#4089ef','#3fc155'];
 var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
 var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
 
-var width = window.innerWidth*0.8;
-var height = width*0.6;
+// Helper functions
+var left_move, right_move;
 
-var top_center = (window.innerHeight - height)/2 ;
-var left_center = (window.innerWidth - width)/2 ;
+var stack = d3.stack()
+    .value(function(d) { return d.values; })
+    // .x(function(d) { return d.date; })
+    // .y(function(d) { return d.value; });
 
-$('#mainVisualization').css("width",width);
-$('#mainVisualization').css("height",height);
-$('#mainVisualization').css("left",left_center);
-$('#mainVisualization').css("top",top_center);
+var nest = d3.nest()
+    .key(function(d) { return d.key; });
 
-var i_width = 1000; 
-var i_height = 600;
+function economy_viz_data( economy_data)
+	{
+
+		var economy_data_streamgraph_key = ["Agriculture","Banking","Communication","Construction","Electricity","Fishing","Foresty","Mining", "Other","Publicadministration","Railways","Realestate","Storage","Transport"];
+
+		economy_data.forEach(function(d){
+				d.Years = new Date(d.Years,0,0)
+				economy_data_streamgraph_key.forEach(
+					function(e){
+						d[e] = parseInt(d[e]);
+					})
+		});
+		
+		return [economy_data,economy_data_streamgraph_key];		
+	}
+
+
+// Visualization placeholder parameters
+var width_streamgraph = window.innerWidth;
+var height_streamgraph = window.innerHeight/2;
+
+$('#Streamgraph').css("left",0);
+$('#Streamgraph').css("bottom",0);
+$('#Streamgraph').css("background-color","#ffffff");
 
 // SVG the visualization 
 var mainVisualizationCanvas = d3.select("#mainVisualization").append("svg")
@@ -46,32 +67,26 @@ var mainVisualizationCanvas = d3.select("#mainVisualization").append("svg")
 
 $('body').css("background-color","#f9f6ea");
 
-d3.csv("Data/Final_Political_Data.csv",function(error,data)
+d3.queue()
+	.defer(d3.csv,"Data/Final_Political_Data.csv")
+	.defer(d3.csv,"Data/12_Economy_GSDP.csv")
+	.await(function(e,pol_data,economy_data){
 
-{
+	// Visualization Code Goes here. 
 
+	// left arrow
 	left_move= function(){
-	if ( slider >10) 
-	{ 
-		slider = slider-1;
-		slide_implement(slider); 
+	if ( slider >10) { slider = slider-1;slide_implement(slider); 
 	}
-	else { location.href="index.html?slider=9"}}
+	else location.href="index.html?slider=9"}
 
+	// right arrow
 	right_move = function(){
-	if (slider <12) 
-	{ 
-		slider = slider+1;
-		slide_implement(slider);
-	}
-	else {
-		// location.href="current_scenario.html"
-		location.href="socio_economic.html"}
-	}
+	if (slider <12) { slider = slider+1;slide_implement(slider);}
+	else location.href="socio_economic.html" }
 	
 	function slide_implement(slider)
 	{
-		console.log(slider);
 		switch(slider) 
 		{
 		case 10 : slide_10(); break;
@@ -80,24 +95,83 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 		}
 	}
 
+	// Code for every slide 
 	slide_implement(slider);
 	function slide_10()
 	{
-		console.log("hey I am 10");
+		$("#slide10introductionText").html(
+			"The candidates elected from every constituency represent the voters interest at the Legislative Assembly and are called <b> MEMBERS OF LEGISLATIVE ASSEMBLY (MLA) </b>. <br> They representation of these concerns are reflected in the socio economic parameters of the state. Further on we will look into these parameters to see if the governments were able to stand upto their manifestos."
+			)
 	}
 	
 	function slide_11()
 	{
-		console.log("hey I am 11");
+		$("#slide10introductionText").html("Under construction")
 	}
 	
 	function slide_12()
 	{
-		console.log("hey I am 12");
+		$("#slide10introductionText").html("");
+		
+		$('#Streamgraph').css("width",width_streamgraph);
+		$('#Streamgraph').css("height",height_streamgraph);
+
+		var viewbox = "0 0 "+width_streamgraph+" "+height_streamgraph;
+		var streamgraph_canvas = d3.select("#Streamgraph")
+								    .append("svg")
+								    .attr("id","Streamgraph_Viz")
+     								.attr("xmlns","http://www.w3.org/2000/svg")
+     								.attr("viewBox",viewbox);
+		
+		// When data is economy data
+		var data = economy_viz_data( economy_data);
+		var stack = d3.stack()
+						.keys(data[1])
+						.order(d3.stackOrderNone)
+						.offset(d3.stackOffsetSilhouette);
+
+    	var layers = stack(data[0]);
+
+    	var x_scale = d3.scaleLinear()
+    					.range([0,width_streamgraph])
+    					.domain(d3.extent(data[0],function(d){return(d.Years)}));
+    	
+    	var y_scale = d3.scaleLinear()
+    					.range([0,height_streamgraph/2])
+    					.domain([d3.max(layers,function(d){return d3.max(d,function(e){return(e[0]+e[1])});}),0]);
+
+
+
+    	var area = d3.area()
+    			// .curve(d3.curveCardinal)
+    			.x(function(d) { 
+    				return x_scale(d.data.Years); })
+    			.y0(function(d) { return y_scale(d[0]); })
+    			.y1(function(d) { return y_scale(d[0]+d[1]);});
+
+
+    	var colorrange = ['#66c2a5','#fc8d62','#8da0cb','#e78ac3','#a6d854','#ffd92f','#e5c494','#66c2a5','#fc8d62','#8da0cb','#e78ac3','#a6d854','#ffd92f','#e5c494'];
+
+    	var streams = streamgraph_canvas.selectAll("path")
+    									.data(layers)
+    									.enter()
+    									.append("path")
+    									.attr("class","stream")
+    									.attr("id",function(d){ return (d.key+"_stream")})
+    									.attr("d",function(d){ return area(d)})
+    									.attr("fill",function(d,i){
+    										return colorrange[i];
+    									})
+    									.attr("opacity",1.0)
+    									.on("mouseover",function(d,i){
+    										d3.select(this).attr("fill","red");
+    									})
+    									.on("mouseout",function(d,i){
+    										d3.select(this).attr("fill",colorrange[i]);
+    									})
+		
 	}
-
-});
-
+	});
 
 </script>	
 
