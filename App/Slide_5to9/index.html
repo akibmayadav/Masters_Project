@@ -32,7 +32,7 @@ var categories = ["GEN","SC","ST"];
 var category_colors = ['#dd6a6a','#4089ef','#3fc155'];
 
 var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
-var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
+var party_colors = ['#66c2a5','#fc8d62','#8da0cb','#ffd92f','#e78ac3','#a6d854','#e5c494','#404040'];
 
 var width = window.innerWidth*0.8;
 var height = width*0.6;
@@ -239,7 +239,8 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 								.attr("stroke-width",0.6)
 								.attr("opacity",1.0);
 
-		constituencies.on("click",mouseclick);
+		constituencies.on("mouseover",mouseover)
+					.on("mouseout",mouseout);
 			candidate_lines_drawing();
 		
 	}
@@ -368,9 +369,6 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 			which_slide = 7; 
 			d3.selectAll("#constLabel").remove();
 			bottomslide_text.html("");
-			var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
-
-			var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
 
 			var party_text = 'The candidate elected in every constituency also represents a political party. The major political parties in Gujarat are ';
 
@@ -416,9 +414,6 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 			which_slide = 7; 
 			d3.selectAll("#constLabel").remove();
 			bottomslide_text.html("");
-			var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
-
-			var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"]
 
 			var party_text = 'The candidate elected in every constituency also represents a political party. The major political parties in Gujarat are ';
 
@@ -542,7 +537,7 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 								})
 								.attr("stroke","white")
 								.attr("stroke-width",0.6)
-								.attr("opacity",0.7);
+								.attr("opacity",1.0);
 
 
 			// Appending histomap polygons
@@ -573,11 +568,6 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 			// Slide 9 removal 
 			$("#Average_Turnout_Lines").remove();
 			bottomslide_text.html("");
-
-
-			var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
-
-			var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
 
 			var sex_data =  d3.nest()
 				.key(function(d) {return d.Year})
@@ -623,7 +613,7 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 								.attr("opacity",function(d,i){
 									var opac = 0.05;
 									if(d.Sex=="F"){
-										opac = 0.5;
+										opac = 1.0;
 									}
 									return opac;
 								});
@@ -709,7 +699,7 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 								})
 								.attr("stroke","white")
 								.attr("stroke-width",0.6)
-								.attr("opacity",0.7);
+								.attr("opacity",1.0);
 
 			var mean_average_label = constituency_grid.append("g")
 							.attr("id","Average_Turnout_Lines")
@@ -750,13 +740,16 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 								return(y_scale(d.Year)-turnout_scale(d.Mean_VoterTurnout)+constituency_rect_height-5)
 							})
 							.text(function(d,i){return Math.round(d.Mean_VoterTurnout) +"%"})
+
+			constituencies.on("mouseover",mouseover)
+							.on("mouseout",mouseout);
 	}
 
 
 
 //////////////////////// MOUSE CLICK FUNCTION FOR CONST BASED SLIDES ///////////////////////
 
-	function mouseclick(d,i)
+	function mouseover(d,i)
 		{
 				// Conditions have to be put it place here
 				if (which_slide == 5 )
@@ -848,8 +841,20 @@ d3.csv("Data/Final_Political_Data.csv",function(error,data)
 
 					var text = "<b> CONSTITUENCY : "+ d.AC_Name + "</br> </b>" +"Voter Turnout : " +d.Turnout + "</br> </b>" +"PARTY : " + d.Party;
 					bottomslide_text.html(text);
+
 				}
 		}
+
+
+	function mouseout(d,i)
+	{
+		if(which_slide ==9)
+		{
+			d3.selectAll(".const_rects").attr("opacity",1.0);
+			bottomslide_text.html("");
+
+		}
+	}
 
 
 	function candidate_lines_drawing()
