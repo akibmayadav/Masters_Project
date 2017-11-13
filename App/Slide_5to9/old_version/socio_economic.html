@@ -26,7 +26,7 @@ var parties = ["INC","BJP","AIRJP","IND","JD","SP","JD(U)","NCP","BJNKP","GPP"];
 
 var party_colors = ["#009e73","#d55e00","#cc79a7","#0072b2","#f0e442","#c1325f","#404040","#3b939b","#6c4a8c","#d15555"];
 
-var socio_economic_domains = ["Economy","Inequalities","Literacy","Women Safety","Health","Environment"];
+var socio_economic_domains = ["Economy","Literacy","Women Safety","Health"];
 
 // Helper functions
 var left_move, right_move;
@@ -36,6 +36,7 @@ function economy_viz_data(economy_data_viz)
 		var economy_data_streamgraph_key = ["Agriculture","Manufacturing","Transport","Realestate","Banking","Construction","Other","Electricity","Railways","Mining","Communication"];
 		
 		var return_data =[];
+
 		economy_data_viz.forEach(function(d){
 				var temp_data = {};
 				temp_data.Years = new Date(parseInt(d.Years),0,0)
@@ -86,7 +87,7 @@ d3.queue()
 	left_move= function(){
 	if ( slider >10) { slider = slider-1;slide_implement(slider); 
 	}
-	else location.href="index.html?slider=9"}
+	else location.href="old_version.html?slider=9"}
 
 	// right arrow
 	right_move = function(){
@@ -192,6 +193,8 @@ d3.queue()
 
 	}
 	
+	// Streamgragh insipired by Harry Stevens streamgraph, https://bl.ocks.org/HarryStevens/c893c7b441298b36f4568bc09df71a1e
+	
 	function slide_12()
 	{
 		which_slide= 12; 
@@ -210,7 +213,7 @@ d3.queue()
 								    .append("svg")
 								    .attr("id","Streamgraph_Viz")
      								.attr("xmlns","http://www.w3.org/2000/svg")
-     								.attr("viewBox",viewbox_stream);
+     								.attr("viewBox",viewbox_stream)
 		// Streamgraph
 
     	var colorrange = ['#ffd92f','#fc8d62','#8da0cb','#66c2a5','#e78ac3','#a6d854','#e5c494','#404040','#404040','#404040','#404040','#404040','#404040'];
@@ -265,8 +268,9 @@ d3.queue()
 			}
 		})
 
-		
+		$("#Economy_selector").css("background-color",'#918c7a');
 		streamgraph_rendering(final_data);
+		
 		function streamgraph_rendering(which_data)
 		{
 
@@ -279,7 +283,6 @@ d3.queue()
 						.offset(d3.stackOffsetSilhouette);
 
     	var layers = stack(which_data[0]);
-    	console.log(which_data);
 
     	var x_scale = d3.scaleTime()
     					.range([0,width_streamgraph])
@@ -310,7 +313,6 @@ d3.queue()
     								.attr("class","tooltip")
     								.style("visibility","hidden");
     	
- 
     	var streams = streamgraph_canvas.selectAll("path")
     									.data(layers)
     									.enter()
@@ -337,8 +339,9 @@ d3.queue()
     									.on("mousemove",function(d,i){
 
     				var x_position = d3.mouse(this)[0];
-    				if (x_position > 3*window.innerWidth/4) {
-    					x_position = x_position - 200;
+    				var tooltip_x = x_position;
+    				if (tooltip_x > 3*window.innerWidth/4) {
+    					tooltip_x = tooltip_x - 190;
     				}
     				
     				var year = x_scale.invert(x_position).getFullYear();
@@ -350,7 +353,7 @@ d3.queue()
 
     				tooltip_text.style("visibility","visible")
     							.html(text)
-    							.style("left", x_position + "px")
+    							.style("left", tooltip_x + "px")
                					.style("top",window.innerHeight/3);
 
                		tooltip_line.style("visibility","visible")
