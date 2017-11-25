@@ -1,0 +1,25 @@
+body {
+	background-color: #f9f6ea;
+	margin:0px;
+}
+
+.header
+{
+	height: 40px;
+	background:#404040;
+	width:100%;
+	margin:0px;
+	padding:0px;
+}
+
+#title
+{
+	position: relative;
+	font-family: sans-serif;
+	color : #e0e03e;
+	font-size: 30px;
+	/*font-weight: bold;*/
+	left:30px;
+	top:3px;
+	
+}
